@@ -1,0 +1,38 @@
+version: '2'
+services:
+  mono_ang_cass_elastic_kafka-app:
+    image: mono_ang_cass_elastic_kafka
+    environment:
+      - _JAVA_OPTIONS=-Xmx512m -Xms256m
+      - SPRING_PROFILES_ACTIVE=prod,swagger
+      - MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED=true
+      - SPRING_DATA_CASSANDRA_CONTACTPOINTS=mono_ang_cass_elastic_kafka-cassandra
+      - JHIPSTER_SLEEP=30 # gives time for other services to boot before the application
+      - KAFKA_BOOTSTRAPSERVERS=kafka:9092
+    ports:
+      - 8080:8080
+  mono_ang_cass_elastic_kafka-cassandra:
+    extends:
+      file: cassandra-cluster.yml
+      service: mono_ang_cass_elastic_kafka-cassandra
+  mono_ang_cass_elastic_kafka-cassandra-node:
+    image: cassandra:3.11.5
+    environment:
+      - CASSANDRA_SEEDS=mono_ang_cass_elastic_kafka-cassandra
+  mono_ang_cass_elastic_kafka-cassandra-migration:
+    extends:
+      file: cassandra-migration.yml
+      service: mono_ang_cass_elastic_kafka-cassandra-migration
+    environment:
+      - CREATE_KEYSPACE_SCRIPT=create-keyspace-prod.cql
+  kafka:
+    extends:
+      file: kafka.yml
+      service: kafka
+    environment:
+      - KAFKA_ADVERTISED_HOST_NAME=kafka
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+  zookeeper:
+    extends:
+      file: kafka.yml
+      service: zookeeper

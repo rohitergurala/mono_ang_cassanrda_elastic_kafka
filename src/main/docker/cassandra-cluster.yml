@@ -1,0 +1,22 @@
+version: '2'
+services:
+  mono_ang_cass_elastic_kafka-cassandra:
+    image: cassandra:3.11.5
+    # volumes:
+    #     - ~/volumes/jhipster/mono_ang_cass_elastic_kafka/cassandra/:/var/lib/cassandra/data
+    ports:
+      - 7000:7000
+      - 7001:7001
+      - 7199:7199
+      - 9042:9042
+      - 9160:9160
+  mono_ang_cass_elastic_kafka-cassandra-node:
+    image: cassandra:3.11.5
+    environment:
+      - CASSANDRA_SEEDS=mono_ang_cass_elastic_kafka-cassandra
+  mono_ang_cass_elastic_kafka-cassandra-migration:
+    extends:
+      file: cassandra-migration.yml
+      service: mono_ang_cass_elastic_kafka-cassandra-migration
+    environment:
+      - CREATE_KEYSPACE_SCRIPT=create-keyspace-prod.cql

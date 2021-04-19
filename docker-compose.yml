@@ -1,0 +1,40 @@
+version: '2'
+services:
+  mono_ang_cass_elastic_kafka:
+    image: mono_ang_cass_elastic_kafka
+    environment:
+      - _JAVA_OPTIONS=-Xmx512m -Xms256m
+      - 'SPRING_PROFILES_ACTIVE=prod,swagger'
+      - MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED=true
+      - SPRING_DATA_CASSANDRA_CONTACTPOINTS=mono_ang_cass_elastic_kafka-cassandra
+      - JHIPSTER_SLEEP=30
+      - 'KAFKA_BOOTSTRAPSERVERS=kafka:9092'
+    ports:
+      - '8080:8080'
+  mono_ang_cass_elastic_kafka-cassandra-node:
+    image: 'cassandra:3.11.5'
+    environment:
+      - CASSANDRA_SEEDS=mono_ang_cass_elastic_kafka-cassandra
+  mono_ang_cass_elastic_kafka-cassandra-migration:
+    environment:
+      - CASSANDRA_CONTACT_POINT=mono_ang_cass_elastic_kafka-cassandra
+      - USER=docker-cassandra-migration
+      - CREATE_KEYSPACE_SCRIPT=create-keyspace-prod.cql
+    build:
+      context: src\main\docker
+      dockerfile: cassandra/Cassandra-Migration.Dockerfile
+    #volumes:
+    #  - 'src\main\resources\config\cql:/cql:ro'
+  mono_ang_cass_elastic_kafka-cassandra:
+    image: 'cassandra:3.11.5'
+    volumes:
+      - '~/volumes/jhipster/mono_ang_cass_elastic_kafka/cassandra/:/var/lib/cassandra/data'
+
+  zookeeper:
+    extends:
+      file: kafka.yml
+      service: zookeeper
+  kafka:
+    extends:
+      file: kafka.yml
+      service: kafka
